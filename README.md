@@ -733,11 +733,12 @@ window.loadAdmFx = function() {
   const isKO=f.round!=='group';
   let html='';
   if(isKO){
+    const opts = TEAMS.slice().sort((a,b)=>a.n.localeCompare(b.n)).map(t=>`<option value="${t.n}">${F(t.n)} ${t.n}</option>`).join('');
     html+=`<div class="card" style="background:var(--tier-a-bg);border:0.5px solid rgba(13,71,161,.2);box-shadow:none;padding:12px;margin-bottom:12px">
-      <div class="fl" style="color:var(--tier-a)">✏️ แก้ชื่อทีม (รอบน็อคเอาท์) — ใส่ทีมจริงที่เข้ารอบแทน placeholder</div>
+      <div class="fl" style="color:var(--tier-a)">✏️ แก้ชื่อทีม (รอบน็อคเอาท์) — เลือกทีมจริงที่เข้ารอบแทน placeholder (เลือกจากลิสต์เพื่อกันสะกดผิด/ชื่อไม่ตรง)</div>
       <div class="ag">
-        <div class="fr"><label class="fl">ทีมเจ้าบ้าน (เดิม: ${f0.home})</label><input type="text" id="tname-h" value="${f.home.replace(/"/g,'&quot;')}" placeholder="เช่น France"></div>
-        <div class="fr"><label class="fl">ทีมเยือน (เดิม: ${f0.away})</label><input type="text" id="tname-a" value="${f.away.replace(/"/g,'&quot;')}" placeholder="เช่น Spain"></div>
+        <div class="fr"><label class="fl">ทีมเจ้าบ้าน (เดิม: ${f0.home})</label><select id="tname-h"><option value="">— เลือกทีม —</option>${opts}</select></div>
+        <div class="fr"><label class="fl">ทีมเยือน (เดิม: ${f0.away})</label><select id="tname-a"><option value="">— เลือกทีม —</option>${opts}</select></div>
       </div>
       <div style="display:flex;gap:8px"><button class="btn bp bs" onclick="saveTeams('${fid}')">💾 บันทึกชื่อทีม</button><button class="btn bg2 bs" onclick="resetTeams('${fid}')">↺ รีเซ็ตเป็น placeholder</button></div>
     </div>`;
@@ -753,6 +754,12 @@ window.loadAdmFx = function() {
   html+=`<div style="display:flex;gap:8px"><button class="btn bp" onclick="saveRes('${fid}')">💾 บันทึกผล</button><button class="btn bg2" onclick="clearRes('${fid}')">↺ ล้างผล</button></div>`;
   document.getElementById('adm-form').innerHTML=html;
   document.getElementById('adm-msg').innerHTML='';
+  if(isKO){
+    const validNames=TEAMS.map(t=>t.n);
+    const th=document.getElementById('tname-h'), ta=document.getElementById('tname-a');
+    if(th&&validNames.includes(f.home)) th.value=f.home;
+    if(ta&&validNames.includes(f.away)) ta.value=f.away;
+  }
 };
 
 window.saveTeams = async (fid) => {
