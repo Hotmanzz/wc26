@@ -765,11 +765,17 @@ window.loadAdmFx = function() {
 window.saveTeams = async (fid) => {
   const h=document.getElementById('tname-h').value.trim();
   const a=document.getElementById('tname-a').value.trim();
-  if(!h||!a){document.getElementById('adm-msg').innerHTML='<div class="al al-info">กรุณากรอกชื่อทีมทั้งสองฝั่ง</div>';return;}
+  if(!h||!a){document.getElementById('adm-msg').innerHTML='<div class="al al-info">กรุณาเลือกทีมทั้งสองฝั่ง</div>';return;}
   setSS('syncing','กำลังบันทึก...');
   try {
     await set(ref(db,`fixtureOverrides/${fid}`),{home:h,away:a});
-    document.getElementById('adm-msg').innerHTML='<div class="al al-ok">✓ บันทึกชื่อทีมแล้ว — ทุกเครื่องเห็นทันที</div>';
+    // ถ้ามีผลแมตช์บันทึกไว้ก่อนหน้านี้แล้ว (อาจติดชื่อ placeholder เดิม) ให้แก้ชื่อทีมในผลให้ตรงกันทันที
+    // เพื่อกันปัญหา "บันทึกผลก่อนแก้ชื่อทีม" ทำให้คะแนนไม่ขึ้น
+    if(results[fid] && results[fid].done){
+      const updated={...results[fid], home:h, away:a};
+      await set(ref(db,`results/${fid}`),updated);
+    }
+    document.getElementById('adm-msg').innerHTML='<div class="al al-ok">✓ บันทึกชื่อทีมแล้ว (และซิงค์ผลแมตช์เดิมให้ตรงด้วย) — ทุกเครื่องเห็นทันที</div>';
     setSS('ok','บันทึกสำเร็จ — Live อัปเดตแล้ว');
     loadAdmFxList();
   } catch(e) { document.getElementById('adm-msg').innerHTML='<div class="al al-err">เกิดข้อผิดพลาด</div>'; setSS('err','บันทึกไม่สำเร็จ'); }
